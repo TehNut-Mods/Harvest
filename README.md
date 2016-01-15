@@ -3,47 +3,45 @@
 Adds right click crop harvesting that is configurable via a JSON file.
 
 ## Default Config
-```
-[
-  {
-    "initialBlock": {
-      "blockName": "minecraft:wheat",
-      "meta": 7
-    },
-    "finalBlock": {
-      "blockName": "minecraft:wheat",
-      "meta": 0
-    }
-  },
-  {
-    "initialBlock": {
-      "blockName": "minecraft:carrots",
-      "meta": 7
-    },
-    "finalBlock": {
-      "blockName": "minecraft:carrots",
-      "meta": 0
-    }
-  },
-  {
-    "initialBlock": {
-      "blockName": "minecraft:potatoes",
-      "meta": 7
-    },
-    "finalBlock": {
-      "blockName": "minecraft:potatoes",
-      "meta": 0
-    }
-  },
-  {
-    "initialBlock": {
-      "blockName": "minecraft:nether_wart",
-      "meta": 3
-    },
-    "finalBlock": {
-      "blockName": "minecraft:nether_wart",
-      "meta": 0
-    }
-  }
-]
-```
+    [
+      {
+        "initialBlock": {
+          "blockName": "minecraft:wheat",
+          "meta": 7
+        },
+        "finalBlock": {
+          "blockName": "minecraft:wheat",
+          "meta": 0
+        }
+      },
+      {
+        "initialBlock": {
+          "blockName": "minecraft:carrots",
+          "meta": 7
+        },
+        "finalBlock": {
+          "blockName": "minecraft:carrots",
+          "meta": 0
+        }
+      },
+      {
+        "initialBlock": {
+          "blockName": "minecraft:potatoes",
+          "meta": 7
+        },
+        "finalBlock": {
+          "blockName": "minecraft:potatoes",
+          "meta": 0
+        }
+      },
+      {
+        "initialBlock": {
+          "blockName": "minecraft:nether_wart",
+          "meta": 3
+        },
+        "finalBlock": {
+          "blockName": "minecraft:nether_wart",
+          "meta": 0
+        }
+      }
+    ]
