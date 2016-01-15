@@ -1,0 +1,16 @@
+[
+{
+  "modid": "Harvest",
+  "name": "Harvest",
+  "description": "Right click crop harvesting",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "http://tehnut.info/",
+  "updateUrl": "http://tehnut.info/",
+  "authorList": [ "TehNut" ],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
