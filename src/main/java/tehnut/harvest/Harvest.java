@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION)
+@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptedMinecraftVersions = "[1.8,1.9)")
 public class Harvest {
 
     public static final String MODID = "Harvest";
