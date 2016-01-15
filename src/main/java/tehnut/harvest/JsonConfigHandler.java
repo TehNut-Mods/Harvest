@@ -55,6 +55,11 @@ public class JsonConfigHandler {
                 new BlockStack(Blocks.potatoes, 0)
         );
         defaultList.add(potato);
+        Crop netherwart = new Crop(
+                new BlockStack(Blocks.nether_wart, 3),
+                new BlockStack(Blocks.nether_wart, 0)
+        );
+        defaultList.add(netherwart);
 
         return defaultList;
     }
