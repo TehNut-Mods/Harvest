@@ -59,8 +59,8 @@ public class Harvest {
                 }
 
                 if (foundSeed) {
-                    event.world.setBlockState(event.pos, newBlock.getState());
                     if (!event.world.isRemote) {
+                        event.world.setBlockState(event.pos, newBlock.getState());
                         for (ItemStack stack : drops) {
                             EntityItem entityItem = new EntityItem(event.world, event.pos.getX() + 0.5, event.pos.getY() + 0.5, event.pos.getZ() + 0.5, stack);
                             entityItem.setPickupDelay(10);
