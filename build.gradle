@@ -5,16 +5,16 @@ buildscript {
         maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
         classpath 'org.ajoberstar:gradle-git:0.10.1'
     }
 }
 
 plugins {
-    id 'com.matthewprenger.cursegradle' version '1.0.5'
-	id "net.minecraftforge.gradle.forge" version "2.0.2"
+    id 'com.matthewprenger.cursegradle' version '1.0.7'
 }
 
+apply plugin: 'forge'
 apply plugin: 'maven-publish'
 
 def build_number = 'CUSTOM'
@@ -35,11 +35,11 @@ if (new File(projectDir, '.git').exists()) {
 }
 
 repositories {
-    maven { url "http://dvs1.progwml6.com/files/maven" }
+
 }
 
 dependencies {
-    deobfCompile "mezz.jei:jei_1.8.9:${jei_version}"
+
 }
 
 minecraft {
@@ -70,7 +70,6 @@ processResources {
 }
 
 jar {
-    classifier = ''
     manifest.mainAttributes(
             "Built-By": System.getProperty('user.name'),
             "Created-By": "${System.getProperty('java.vm.version')} + (${System.getProperty('java.vm.vendor')})",
@@ -81,13 +80,25 @@ jar {
     )
 }
 
+// add a source jar
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
 // add a javadoc jar
 task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
     classifier = 'javadoc'
 }
 
-tasks.build.dependsOn sourceJar, javadocJar
+// because the normal output has been made to be obfuscated
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+tasks.build.dependsOn sourceJar, javadocJar, deobfJar
 
 tasks.withType(JavaCompile) { task ->
     task.options.encoding = 'UTF-8'
@@ -100,6 +111,7 @@ publishing {
             artifact jar
             artifact sourceJar
             artifact javadocJar
+            artifact deobfJar
         }
     }
     repositories {
@@ -119,10 +131,9 @@ curseforge {
         id = "${curse_id}"
 		changelog = project.hasProperty('changelog') ? project.changelog : ''
         releaseType = 'release'
-        addGameVersion '1.8'
-        addGameVersion '1.8.8'
-        addGameVersion '1.8.9'
 
+		
+        addArtifact deobfJar
         addArtifact sourceJar
         addArtifact javadocJar
     }

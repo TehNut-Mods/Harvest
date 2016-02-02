@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.ResourceLocation;
 
 import java.io.File;
 import java.io.FileReader;
@@ -23,13 +22,15 @@ public class JsonConfigHandler {
         try {
             if (!jsonConfig.exists() && jsonConfig.createNewFile()) {
                 List<Crop> defaultList = handleDefaults();
-                String json = gson.toJson(defaultList, new TypeToken<ArrayList<Crop>>() { }.getType());
+                String json = gson.toJson(defaultList, new TypeToken<ArrayList<Crop>>() {
+                }.getType());
                 FileWriter writer = new FileWriter(jsonConfig);
                 writer.write(json);
                 writer.close();
             }
 
-            tempList = gson.fromJson(new FileReader(jsonConfig), new TypeToken<ArrayList<Crop>>() { }.getType());
+            tempList = gson.fromJson(new FileReader(jsonConfig), new TypeToken<ArrayList<Crop>>() {
+            }.getType());
 
             for (Crop crop : tempList)
                 Harvest.instance.cropMap.put(crop.getInitialBlock(), crop);
@@ -73,13 +74,13 @@ public class JsonConfigHandler {
             if (json.getAsJsonObject().get("meta") != null)
                 meta = json.getAsJsonObject().get("meta").getAsInt();
 
-            return new BlockStack(Block.blockRegistry.getObject(new ResourceLocation(name)), meta);
+            return new BlockStack((Block) Block.blockRegistry.getObject(name), meta);
         }
 
         @Override
         public JsonElement serialize(BlockStack src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("blockName", Block.blockRegistry.getNameForObject(src.getBlock()).toString());
+            jsonObject.addProperty("blockName", Block.blockRegistry.getNameForObject(src.getBlock()));
             jsonObject.addProperty("meta", src.getMeta());
             return jsonObject;
         }
