@@ -36,6 +36,9 @@ public class Harvest {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onInteract(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getHand() != EnumHand.MAIN_HAND)
+            return;
+
         BlockStack worldBlock = BlockStack.getStackFromPos(event.getWorld(), event.getPos());
         if (cropMap.containsKey(worldBlock)) {
             BlockStack newBlock = cropMap.get(worldBlock).getFinalBlock();
