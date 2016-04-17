@@ -2,9 +2,8 @@ package tehnut.harvest;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.registry.GameData;
 
 public class BlockStack {
 
@@ -41,7 +40,7 @@ public class BlockStack {
 
     @Override
     public String toString() {
-        return GameData.getBlockRegistry().getNameForObject(getBlock()) + ":" + getMeta();
+        return getBlock().getRegistryName().toString() + ":" + getMeta();
     }
 
     @Override

@@ -3,8 +3,10 @@ package tehnut.harvest;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockCrops;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -41,23 +43,28 @@ public class JsonConfigHandler {
     private static List<Crop> handleDefaults() {
         List<Crop> defaultList = new ArrayList<Crop>();
         Crop wheat = new Crop(
-                new BlockStack(Blocks.wheat, 7),
-                new BlockStack(Blocks.wheat, 0)
+                new BlockStack(Blocks.WHEAT, ((BlockCrops)Blocks.WHEAT).getMaxAge()),
+                new BlockStack(Blocks.WHEAT, 0)
         );
         defaultList.add(wheat);
         Crop carrot = new Crop(
-                new BlockStack(Blocks.carrots, 7),
-                new BlockStack(Blocks.carrots, 0)
+                new BlockStack(Blocks.CARROTS, ((BlockCrops)Blocks.CARROTS).getMaxAge()),
+                new BlockStack(Blocks.CARROTS, 0)
         );
         defaultList.add(carrot);
         Crop potato = new Crop(
-                new BlockStack(Blocks.potatoes, 7),
-                new BlockStack(Blocks.potatoes, 0)
+                new BlockStack(Blocks.POTATOES, ((BlockCrops)Blocks.POTATOES).getMaxAge()),
+                new BlockStack(Blocks.POTATOES, 0)
         );
         defaultList.add(potato);
+        Crop beetroot = new Crop(
+                new BlockStack(Blocks.BEETROOTS, ((BlockCrops)Blocks.BEETROOTS).getMaxAge()),
+                new BlockStack(Blocks.BEETROOTS, 0)
+        );
+        defaultList.add(beetroot);
         Crop netherwart = new Crop(
-                new BlockStack(Blocks.nether_wart, 3),
-                new BlockStack(Blocks.nether_wart, 0)
+                new BlockStack(Blocks.NETHER_WART, 3),
+                new BlockStack(Blocks.NETHER_WART, 0)
         );
         defaultList.add(netherwart);
 
@@ -73,13 +80,13 @@ public class JsonConfigHandler {
             if (json.getAsJsonObject().get("meta") != null)
                 meta = json.getAsJsonObject().get("meta").getAsInt();
 
-            return new BlockStack(Block.blockRegistry.getObject(new ResourceLocation(name)), meta);
+            return new BlockStack(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(name)), meta);
         }
 
         @Override
         public JsonElement serialize(BlockStack src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("blockName", Block.blockRegistry.getNameForObject(src.getBlock()).toString());
+            jsonObject.addProperty("blockName", src.getBlock().getRegistryName().toString());
             jsonObject.addProperty("meta", src.getMeta());
             return jsonObject;
         }

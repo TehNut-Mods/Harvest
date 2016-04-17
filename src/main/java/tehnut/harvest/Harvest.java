@@ -2,6 +2,7 @@ package tehnut.harvest;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -15,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptedMinecraftVersions = "[1.8,1.9)")
+@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION)
 public class Harvest {
 
     public static final String MODID = "Harvest";
@@ -34,43 +35,40 @@ public class Harvest {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void onInteract(PlayerInteractEvent event) {
-        if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+    public void onInteract(PlayerInteractEvent.RightClickBlock event) {
+        BlockStack worldBlock = BlockStack.getStackFromPos(event.getWorld(), event.getPos());
+        if (cropMap.containsKey(worldBlock)) {
+            BlockStack newBlock = cropMap.get(worldBlock).getFinalBlock();
+            List<ItemStack> drops = worldBlock.getBlock().getDrops(event.getWorld(), event.getPos(), worldBlock.getBlock().getActualState(worldBlock.getState(), event.getWorld(), event.getPos()), 0);
+            boolean foundSeed = false;
 
-            BlockStack worldBlock = BlockStack.getStackFromPos(event.world, event.pos);
-            if (cropMap.containsKey(worldBlock)) {
-                BlockStack newBlock = cropMap.get(worldBlock).getFinalBlock();
-                List<ItemStack> drops = worldBlock.getBlock().getDrops(event.world, event.pos, worldBlock.getBlock().getActualState(worldBlock.getState(), event.world, event.pos), 0);
-                boolean foundSeed = false;
+            for (ItemStack stack : drops) {
+                if (stack == null)
+                    continue;
 
-                for (ItemStack stack : drops) {
-                    if (stack == null)
-                        continue;
+                if (stack.getItem() instanceof IPlantable) {
+                    if (stack.stackSize > 1)
+                        stack.stackSize--;
+                    else
+                        drops.remove(stack);
 
-                    if (stack.getItem() instanceof IPlantable) {
-                        if (stack.stackSize > 1)
-                            stack.stackSize--;
-                        else
-                            drops.remove(stack);
-
-                        foundSeed = true;
-                        break;
-                    }
+                    foundSeed = true;
+                    break;
                 }
-
-                if (foundSeed) {
-                    if (!event.world.isRemote) {
-                        event.world.setBlockState(event.pos, newBlock.getState());
-                        for (ItemStack stack : drops) {
-                            EntityItem entityItem = new EntityItem(event.world, event.pos.getX() + 0.5, event.pos.getY() + 0.5, event.pos.getZ() + 0.5, stack);
-                            entityItem.setPickupDelay(10);
-                            event.world.spawnEntityInWorld(entityItem);
-                        }
-                    }
-                }
-
-                event.entityPlayer.swingItem();
             }
+
+            if (foundSeed) {
+                if (!event.getWorld().isRemote) {
+                    event.getWorld().setBlockState(event.getPos(), newBlock.getState());
+                    for (ItemStack stack : drops) {
+                        EntityItem entityItem = new EntityItem(event.getWorld(), event.getPos().getX() + 0.5, event.getPos().getY() + 0.5, event.getPos().getZ() + 0.5, stack);
+                        entityItem.setPickupDelay(10);
+                        event.getWorld().spawnEntityInWorld(entityItem);
+                    }
+                }
+            }
+
+            event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
         }
     }
 }
