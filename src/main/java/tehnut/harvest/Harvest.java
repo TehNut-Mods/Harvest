@@ -42,7 +42,7 @@ public class Harvest {
         BlockStack worldBlock = BlockStack.getStackFromPos(event.getWorld(), event.getPos());
         if (cropMap.containsKey(worldBlock)) {
             BlockStack newBlock = cropMap.get(worldBlock).getFinalBlock();
-            List<ItemStack> drops = worldBlock.getBlock().getDrops(event.getWorld(), event.getPos(), worldBlock.getBlock().getActualState(worldBlock.getState(), event.getWorld(), event.getPos()), 0);
+            List<ItemStack> drops = worldBlock.getBlock().getDrops(event.getWorld(), event.getPos(), worldBlock.getState(), 0);
             boolean foundSeed = false;
 
             for (ItemStack stack : drops) {
