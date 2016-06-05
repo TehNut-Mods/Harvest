@@ -42,31 +42,26 @@ public class JsonConfigHandler {
 
     private static List<Crop> handleDefaults() {
         List<Crop> defaultList = new ArrayList<Crop>();
-        Crop wheat = new Crop(
+        defaultList.add(new Crop(
                 new BlockStack(Blocks.WHEAT, ((BlockCrops)Blocks.WHEAT).getMaxAge()),
                 new BlockStack(Blocks.WHEAT, 0)
-        );
-        defaultList.add(wheat);
-        Crop carrot = new Crop(
+        ));
+        defaultList.add(new Crop(
                 new BlockStack(Blocks.CARROTS, ((BlockCrops)Blocks.CARROTS).getMaxAge()),
                 new BlockStack(Blocks.CARROTS, 0)
-        );
-        defaultList.add(carrot);
-        Crop potato = new Crop(
+        ));
+        defaultList.add(new Crop(
                 new BlockStack(Blocks.POTATOES, ((BlockCrops)Blocks.POTATOES).getMaxAge()),
                 new BlockStack(Blocks.POTATOES, 0)
-        );
-        defaultList.add(potato);
-        Crop beetroot = new Crop(
+        ));
+        defaultList.add(new Crop(
                 new BlockStack(Blocks.BEETROOTS, ((BlockCrops)Blocks.BEETROOTS).getMaxAge()),
                 new BlockStack(Blocks.BEETROOTS, 0)
-        );
-        defaultList.add(beetroot);
-        Crop netherwart = new Crop(
+        ));
+        defaultList.add(new Crop(
                 new BlockStack(Blocks.NETHER_WART, 3),
                 new BlockStack(Blocks.NETHER_WART, 0)
-        );
-        defaultList.add(netherwart);
+        ));
 
         return defaultList;
     }

@@ -1,5 +1,6 @@
 package tehnut.harvest;
 
+import net.minecraft.block.BlockCrops;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -10,8 +11,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +30,10 @@ public class Harvest {
     @Mod.Instance(MODID)
     public static Harvest instance;
 
+    public static Logger logger = LogManager.getLogger(NAME);
+
     public Map<BlockStack, Crop> cropMap = new HashMap<BlockStack, Crop>();
+    public Method getSeed;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -60,7 +67,20 @@ public class Harvest {
                 }
             }
 
-            if (foundSeed) {
+            boolean seedNotNull = true;
+            if (worldBlock.getBlock() instanceof BlockCrops) {
+                try {
+                    if (getSeed == null) {
+                        getSeed = BlockCrops.class.getDeclaredMethod("getSeed");
+                        getSeed.setAccessible(true);
+                    }
+                    seedNotNull = getSeed.invoke(worldBlock.getBlock()) != null;
+                } catch (Exception e) {
+                    logger.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
+                }
+            }
+
+            if (seedNotNull && foundSeed) {
                 if (!event.getWorld().isRemote) {
                     event.getWorld().setBlockState(event.getPos(), newBlock.getState());
                     for (ItemStack stack : drops) {
