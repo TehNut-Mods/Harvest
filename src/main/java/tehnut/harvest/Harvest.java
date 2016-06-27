@@ -20,15 +20,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptedMinecraftVersions = "[1.9,1.10)")
+@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.9,1.10.2)")
 public class Harvest {
 
     public static final String MODID = "Harvest";
     public static final String NAME = "Harvest";
     public static final String VERSION = "@VERSION@";
 
-    @Mod.Instance(MODID)
-    public static Harvest instance;
+	@Mod.Instance(MODID)
+	public static Harvest instance;
 
     public static Logger logger = LogManager.getLogger(NAME);
 
