@@ -3,6 +3,7 @@ package tehnut.harvest;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,10 +28,11 @@ public class Harvest {
     public static final String NAME = "Harvest";
     public static final String VERSION = "@VERSION@";
 
+    public static final Logger LOGGER = LogManager.getLogger(NAME);
+    public static final Boolean IS_DEV = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+
 	@Mod.Instance(MODID)
 	public static Harvest instance;
-
-    public static Logger logger = LogManager.getLogger(NAME);
 
     public Map<BlockStack, Crop> cropMap = new HashMap<BlockStack, Crop>();
     public Method getSeed;
@@ -71,12 +73,12 @@ public class Harvest {
             if (worldBlock.getBlock() instanceof BlockCrops) {
                 try {
                     if (getSeed == null) {
-                        getSeed = BlockCrops.class.getDeclaredMethod("getSeed");
+                        getSeed = BlockCrops.class.getDeclaredMethod(IS_DEV ? "func_149866_i" : "getSeed");
                         getSeed.setAccessible(true);
                     }
                     seedNotNull = getSeed.invoke(worldBlock.getBlock()) != null;
                 } catch (Exception e) {
-                    logger.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
+                    LOGGER.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
                 }
             }
 
