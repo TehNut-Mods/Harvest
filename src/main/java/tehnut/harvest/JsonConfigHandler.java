@@ -2,7 +2,6 @@ package tehnut.harvest;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -34,7 +33,7 @@ public class JsonConfigHandler {
             tempList = gson.fromJson(new FileReader(jsonConfig), new TypeToken<ArrayList<Crop>>() { }.getType());
 
             for (Crop crop : tempList)
-                Harvest.instance.cropMap.put(crop.getInitialBlock(), crop);
+                Harvest.instance.CROP_MAP.put(crop.getInitialBlock(), crop);
         } catch (IOException e) {
             e.printStackTrace();
         }
