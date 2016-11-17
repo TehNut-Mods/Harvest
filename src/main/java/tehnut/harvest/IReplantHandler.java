@@ -4,11 +4,14 @@ import net.minecraft.block.BlockCrops;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -24,12 +27,12 @@ public interface IReplantHandler {
             boolean foundSeed = false;
 
             for (ItemStack stack : drops) {
-                if (stack == null)
+                if (stack.func_190926_b())
                     continue;
 
                 if (stack.getItem() instanceof IPlantable) {
-                    if (stack.stackSize > 1)
-                        stack.stackSize--;
+                    if (stack.func_190916_E() > 1)
+                        stack.func_190918_g(1);
                     else
                         drops.remove(stack);
 
@@ -41,11 +44,8 @@ public interface IReplantHandler {
             boolean seedNotNull = true;
             if (worldBlock.getBlock() instanceof BlockCrops) {
                 try {
-                    if (Harvest.getSeed == null) {
-                        Harvest.getSeed = BlockCrops.class.getDeclaredMethod(!Harvest.IS_DEV ? "func_149866_i" : "getSeed");
-                        Harvest.getSeed.setAccessible(true);
-                    }
-                    seedNotNull = Harvest.getSeed.invoke(worldBlock.getBlock()) != null;
+                    Item seed = (Item) Harvest._GET_SEED.invoke(worldBlock.getBlock());
+                    seedNotNull = seed != null && seed != Items.field_190931_a;
                 } catch (Exception e) {
                     Harvest.LOGGER.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
                 }

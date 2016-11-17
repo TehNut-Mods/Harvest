@@ -33,7 +33,7 @@ public class JsonConfigHandler {
             tempList = gson.fromJson(new FileReader(jsonConfig), new TypeToken<ArrayList<Crop>>() { }.getType());
 
             for (Crop crop : tempList)
-                Harvest.instance.CROP_MAP.put(crop.getInitialBlock(), crop);
+                Harvest.CROP_MAP.put(crop.getInitialBlock(), crop);
         } catch (IOException e) {
             e.printStackTrace();
         }
