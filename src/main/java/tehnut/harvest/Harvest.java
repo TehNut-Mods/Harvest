@@ -20,7 +20,7 @@ import java.util.Map;
 @Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.11,1.12)")
 public class Harvest {
 
-    public static final String MODID = "Harvest";
+    public static final String MODID = "harvest";
     public static final String NAME = "Harvest";
     public static final String VERSION = "@VERSION@";
 
