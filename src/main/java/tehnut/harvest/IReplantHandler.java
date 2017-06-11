@@ -27,15 +27,11 @@ public interface IReplantHandler {
             boolean foundSeed = false;
 
             for (ItemStack stack : drops) {
-                if (stack.func_190926_b())
+                if (stack.isEmpty())
                     continue;
 
                 if (stack.getItem() instanceof IPlantable) {
-                    if (stack.func_190916_E() > 1)
-                        stack.func_190918_g(1);
-                    else
-                        drops.remove(stack);
-
+                    stack.shrink(1);
                     foundSeed = true;
                     break;
                 }
@@ -45,7 +41,7 @@ public interface IReplantHandler {
             if (worldBlock.getBlock() instanceof BlockCrops) {
                 try {
                     Item seed = (Item) Harvest._GET_SEED.invoke(worldBlock.getBlock());
-                    seedNotNull = seed != null && seed != Items.field_190931_a;
+                    seedNotNull = seed != null && seed != Items.AIR;
                 } catch (Exception e) {
                     Harvest.LOGGER.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
                 }
@@ -57,7 +53,7 @@ public interface IReplantHandler {
                     for (ItemStack stack : drops) {
                         EntityItem entityItem = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
                         entityItem.setPickupDelay(10);
-                        world.spawnEntityInWorld(entityItem);
+                        world.spawnEntity(entityItem);
                     }
                 }
             }

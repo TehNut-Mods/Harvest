@@ -6,6 +6,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -17,7 +18,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.11,1.12)")
+@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.11,1.13)")
 public class Harvest {
 
     public static final String MODID = "harvest";
@@ -55,6 +56,7 @@ public class Harvest {
                     IReplantHandler.DEFAULT_HANDLER.handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
 
                 event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
+                event.setUseItem(Event.Result.DENY);
             }
         }
     }
