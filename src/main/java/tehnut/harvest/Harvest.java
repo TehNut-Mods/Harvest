@@ -24,13 +24,11 @@ public class Harvest {
     public static final String MODID = "harvest";
     public static final String NAME = "Harvest";
     public static final String VERSION = "@VERSION@";
-
     public static final Logger LOGGER = LogManager.getLogger(NAME);
-
-    public static final Map<BlockStack, Crop> CROP_MAP = new HashMap<BlockStack, Crop>();
     public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = new HashMap<Block, IReplantHandler>();
-
     public static final Method _GET_SEED;
+
+    public static HarvestConfig config;
 
     static {
         _GET_SEED = ReflectionHelper.findMethod(BlockCrops.class, null, new String[]{"getSeed", "func_149866_i"});
@@ -38,7 +36,7 @@ public class Harvest {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        JsonConfigHandler.init(new File(event.getModConfigurationDirectory(), MODID + ".json"));
+        JsonConfigHandler.init(new File(event.getModConfigurationDirectory(), MODID + "_config.json"), new File(event.getModConfigurationDirectory(), MODID + ".json"));
     }
 
     @Mod.EventBusSubscriber
@@ -49,14 +47,15 @@ public class Harvest {
                 return;
 
             BlockStack worldBlock = BlockStack.getStackFromPos(event.getWorld(), event.getPos());
-            if (CROP_MAP.containsKey(worldBlock)) {
+            if (config.getCropMap().containsKey(worldBlock)) {
                 if (CUSTOM_HANDLERS.containsKey(worldBlock.getBlock()))
                     CUSTOM_HANDLERS.get(worldBlock.getBlock()).handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
                 else
-                    IReplantHandler.DEFAULT_HANDLER.handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
+                    ReplantHandlers.CONFIG.handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
 
                 event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
                 event.setUseItem(Event.Result.DENY);
+                event.getEntityPlayer().addExhaustion(config.getExhaustionPerHarvest());
             }
         }
     }
