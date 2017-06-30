@@ -31,7 +31,7 @@ public class Harvest {
     public static HarvestConfig config;
 
     static {
-        _GET_SEED = ReflectionHelper.findMethod(BlockCrops.class, null, new String[]{"getSeed", "func_149866_i"});
+        _GET_SEED = ReflectionHelper.findMethod(BlockCrops.class, "getSeed", "func_149866_i");
     }
 
     @Mod.EventHandler
