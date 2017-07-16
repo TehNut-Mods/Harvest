@@ -4,8 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -35,8 +36,8 @@ public class Harvest {
     }
 
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        JsonConfigHandler.init(new File(event.getModConfigurationDirectory(), MODID + "_config.json"), new File(event.getModConfigurationDirectory(), MODID + ".json"));
+    public void init(FMLPostInitializationEvent event) {
+        JsonConfigHandler.init(new File(Loader.instance().getConfigDir(), MODID + "_config.json"), new File(Loader.instance().getConfigDir(), MODID + ".json"));
     }
 
     @Mod.EventBusSubscriber
