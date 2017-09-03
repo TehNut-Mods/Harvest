@@ -47,6 +47,9 @@ public class ReplantHandlers {
                     world.spawnEntity(entityItem);
                 }
             }
+        } else {
+            if (Harvest.config.shouldLog())
+                Harvest.LOGGER.info("Did not harvest. seedNotNull - {}, foundSeed - {}", seedNotNull, foundSeed);
         }
     };
 }

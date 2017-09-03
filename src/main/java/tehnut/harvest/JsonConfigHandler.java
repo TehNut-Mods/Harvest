@@ -5,6 +5,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
+import net.minecraft.block.IGrowable;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.init.Blocks;
@@ -21,7 +22,14 @@ import java.util.List;
 
 public class JsonConfigHandler {
 
-    public static Gson gson = new GsonBuilder().setPrettyPrinting().serializeNulls().disableHtmlEscaping().registerTypeAdapter(BlockStack.class, new SerializerBlockStack()).create();
+    public static Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .serializeNulls()
+            .disableHtmlEscaping()
+            .registerTypeAdapter(Crop.class, new SerializerCrop())
+            .registerTypeAdapter(BlockStack.class, new SerializerBlockStack())
+            .create();
+
     public static List<Crop> tempList = Lists.newArrayList();
 
     public static void init(File jsonConfig, File oldConfig) {
@@ -55,11 +63,20 @@ public class JsonConfigHandler {
             return tempList;
 
         List<Crop> defaultList = Lists.newArrayList();
-        defaultList.add(new Crop(new BlockStack(Blocks.WHEAT, getMaxAge(Blocks.WHEAT)), new BlockStack(Blocks.WHEAT, 0)));
-        defaultList.add(new Crop(new BlockStack(Blocks.CARROTS, getMaxAge(Blocks.CARROTS)), new BlockStack(Blocks.CARROTS, 0)));
-        defaultList.add(new Crop(new BlockStack(Blocks.POTATOES, getMaxAge(Blocks.POTATOES)), new BlockStack(Blocks.POTATOES, 0)));
-        defaultList.add(new Crop(new BlockStack(Blocks.BEETROOTS, getMaxAge(Blocks.BEETROOTS)), new BlockStack(Blocks.BEETROOTS, 0)));
-        defaultList.add(new Crop(new BlockStack(Blocks.NETHER_WART, 3), new BlockStack(Blocks.NETHER_WART, 0)));
+
+        if (Harvest.config.runFirstStartSearch()) {
+            for (Block block : ForgeRegistries.BLOCKS)
+                if (block instanceof IGrowable)
+                    defaultList.add(new Crop(block, getMaxAge(block)));
+
+            return defaultList;
+        }
+
+        defaultList.add(new Crop(Blocks.WHEAT, getMaxAge(Blocks.WHEAT)));
+        defaultList.add(new Crop(Blocks.CARROTS, getMaxAge(Blocks.CARROTS)));
+        defaultList.add(new Crop(Blocks.POTATOES, getMaxAge(Blocks.POTATOES)));
+        defaultList.add(new Crop(Blocks.BEETROOTS, getMaxAge(Blocks.BEETROOTS)));
+        defaultList.add(new Crop(Blocks.NETHER_WART, 3));
 
         return defaultList;
     }
@@ -79,6 +96,29 @@ public class JsonConfigHandler {
         }
 
         return -1;
+    }
+
+    public static class SerializerCrop implements JsonDeserializer<Crop>, JsonSerializer<Crop> {
+
+        @Override
+        public Crop deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            BlockStack initialBlock = context.deserialize(json.getAsJsonObject().get("initialBlock"), BlockStack.class);
+            BlockStack finalBlock = new BlockStack(initialBlock.getBlock(), 0);
+            if (json.getAsJsonObject().has("finalBlock"))
+                finalBlock = context.deserialize(json.getAsJsonObject().get("finalBlock"), BlockStack.class);
+
+            return new Crop(initialBlock, finalBlock);
+        }
+
+        @Override
+        public JsonElement serialize(Crop src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.add("initialBlock", context.serialize(src.getInitialBlock()));
+            if (src.getFinalBlock().getBlock() != src.getInitialBlock().getBlock() || src.getFinalBlock().getMeta() > 0)
+                jsonObject.add("finalBlock", context.serialize(src.getFinalBlock()));
+
+            return jsonObject;
+        }
     }
 
     public static class SerializerBlockStack implements JsonDeserializer<BlockStack>, JsonSerializer<BlockStack> {

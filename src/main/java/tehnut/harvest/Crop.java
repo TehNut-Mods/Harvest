@@ -1,5 +1,7 @@
 package tehnut.harvest;
 
+import net.minecraft.block.Block;
+
 public class Crop {
 
     private final BlockStack initialBlock;
@@ -8,6 +10,10 @@ public class Crop {
     public Crop(BlockStack initialBlock, BlockStack finalBlock) {
         this.initialBlock = initialBlock;
         this.finalBlock = finalBlock;
+    }
+
+    public Crop(Block initial, int maxAge) {
+        this(new BlockStack(initial, maxAge), new BlockStack(initial, 0));
     }
 
     public BlockStack getInitialBlock() {
