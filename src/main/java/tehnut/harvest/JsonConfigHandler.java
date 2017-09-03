@@ -1,5 +1,6 @@
 package tehnut.harvest;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -32,7 +33,11 @@ public class JsonConfigHandler {
 
     public static List<Crop> tempList = Lists.newArrayList();
 
-    public static void init(File jsonConfig, File oldConfig) {
+    public static void init(File configDir) {
+        File jsonConfig = new File(configDir, Harvest.MODID + "_config.json");
+        File oldConfig = new File(configDir, Harvest.MODID + ".json");
+        File scannedOutput = new File(configDir, Harvest.MODID + "_scanned_output.json");
+
         try {
             if (oldConfig.exists()) {
                 FileReader reader = new FileReader(oldConfig);
@@ -53,6 +58,21 @@ public class JsonConfigHandler {
             Harvest.config = gson.fromJson(reader, HarvestConfig.class);
             reader.close();
             Harvest.config.initCropMap();
+
+            if (Harvest.config.runFirstStartSearch()) {
+                Stopwatch stopwatch = Stopwatch.createStarted();
+                if (scannedOutput.exists())
+                    scannedOutput.delete();
+
+                List<Crop> detected = Lists.newArrayList();
+                ForgeRegistries.BLOCKS.getValues().stream().filter(b -> b instanceof BlockCrops).forEach(b -> detected.add(new Crop(b, getMaxAge(b))));
+
+                String json = gson.toJson(detected);
+                FileWriter writer = new FileWriter(scannedOutput);
+                writer.write(json);
+                writer.close();
+                Harvest.LOGGER.info("Discovered {} potential crops in {}", detected.size(), stopwatch.stop());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,15 +83,6 @@ public class JsonConfigHandler {
             return tempList;
 
         List<Crop> defaultList = Lists.newArrayList();
-
-        if (Harvest.config.runFirstStartSearch()) {
-            for (Block block : ForgeRegistries.BLOCKS)
-                if (block instanceof IGrowable)
-                    defaultList.add(new Crop(block, getMaxAge(block)));
-
-            return defaultList;
-        }
-
         defaultList.add(new Crop(Blocks.WHEAT, getMaxAge(Blocks.WHEAT)));
         defaultList.add(new Crop(Blocks.CARROTS, getMaxAge(Blocks.CARROTS)));
         defaultList.add(new Crop(Blocks.POTATOES, getMaxAge(Blocks.POTATOES)));

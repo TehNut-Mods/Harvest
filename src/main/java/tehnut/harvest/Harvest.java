@@ -37,7 +37,7 @@ public class Harvest {
 
     @Mod.EventHandler
     public void init(FMLPostInitializationEvent event) {
-        JsonConfigHandler.init(new File(Loader.instance().getConfigDir(), MODID + "_config.json"), new File(Loader.instance().getConfigDir(), MODID + ".json"));
+        JsonConfigHandler.init(Loader.instance().getConfigDir());
     }
 
     @Mod.EventBusSubscriber

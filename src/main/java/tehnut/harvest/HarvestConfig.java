@@ -10,14 +10,14 @@ public class HarvestConfig {
     private List<Crop> crops;
     private float exhaustionPerHarvest;
     private boolean additionalLogging;
-    private boolean firstRunSearch;
+    private boolean checkForCrops;
     private final transient Map<BlockStack, Crop> cropMap;
 
-    public HarvestConfig(List<Crop> crops, float exhaustionPerHarvest, boolean additionalLogging, boolean firstRunSearch) {
+    public HarvestConfig(List<Crop> crops, float exhaustionPerHarvest, boolean additionalLogging, boolean checkForCrops) {
         this.crops = crops;
         this.exhaustionPerHarvest = exhaustionPerHarvest;
         this.additionalLogging = additionalLogging;
-        this.firstRunSearch = firstRunSearch;
+        this.checkForCrops = checkForCrops;
         this.cropMap = Maps.newHashMap();
     }
 
@@ -43,7 +43,7 @@ public class HarvestConfig {
     }
 
     public boolean runFirstStartSearch() {
-        return additionalLogging;
+        return checkForCrops;
     }
 
     public Map<BlockStack, Crop> getCropMap() {
