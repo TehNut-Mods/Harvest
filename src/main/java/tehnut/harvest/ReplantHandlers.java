@@ -5,16 +5,18 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.IPlantable;
-
-import java.util.List;
+import net.minecraftforge.event.ForgeEventFactory;
 
 public class ReplantHandlers {
 
     public static final IReplantHandler CONFIG = (world, pos, state, player, tileEntity) -> {
         BlockStack worldBlock = BlockStack.getStackFromPos(world, pos);
         BlockStack newBlock = Harvest.config.getCropMap().get(worldBlock).getFinalBlock();
-        List<ItemStack> drops = worldBlock.getBlock().getDrops(world, pos, worldBlock.getState(), 0);
+        NonNullList<ItemStack> drops = NonNullList.create();
+        worldBlock.getBlock().getDrops(drops, world, pos, state, 0);
+        ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1.0F, false, player);
         boolean foundSeed = false;
 
         for (ItemStack stack : drops) {
