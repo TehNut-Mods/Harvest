@@ -1,0 +1,7 @@
+{
+  "id": "harvest",
+  "name": "Harvest",
+  "version": "1.0.0",
+  "side": "universal",
+  "initializer": "tehnut.harvest.Harvest"
+}
