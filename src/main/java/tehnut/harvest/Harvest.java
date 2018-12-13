@@ -75,8 +75,8 @@ public class Harvest implements ModInitializer {
             debug("Successfully loaded config");
             debug("Currently enabled crops: {}", Joiner.on(" | ").join(config.getCrops()));
         } catch (IOException e) {
-            debug("Config not found, generating a new one.");
             config = new HarvestConfig();
+            debug("Config not found, generating a new one.");
             try (FileWriter writer = new FileWriter(configFile)) {
                 writer.write(new GsonBuilder().setPrettyPrinting().create().toJson(config));
             } catch (IOException e2) {
