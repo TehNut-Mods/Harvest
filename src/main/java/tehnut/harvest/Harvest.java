@@ -32,14 +32,8 @@ public class Harvest implements ModInitializer {
     public static HarvestConfig config;
 
     public static final Tag<Item> SEED_TAG = TagRegistry.item(new Identifier("harvest", "seeds"));
-    public static final Tag<Block> CROP_TAG = TagRegistry.block(new Identifier("harvest", "crops"));
     public static final Logger LOGGER = LogManager.getLogger("Harvest");
     public static final IReplantHandler DEFAULT_HANDLER = (world, pos, state, player, tileEntity) -> {
-        if (!CROP_TAG.contains(state.getBlock())) {
-            debug("{} is not tagged as a crop", state);
-            return ActionResult.PASS;
-        }
-
         Crop crop = config.getCrops().stream().filter(c -> c.test(state)).findFirst().orElse(null);
         if (crop == null) {
             debug("No crop found for state {}", state);
