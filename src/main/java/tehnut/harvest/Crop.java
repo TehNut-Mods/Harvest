@@ -1,54 +1,80 @@
 package tehnut.harvest;
 
+import com.google.gson.*;
+import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.state.IProperty;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class Crop {
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.function.Predicate;
 
-    private final BlockStack initialBlock;
-    private final BlockStack finalBlock;
+@JsonAdapter(Crop.Adapter.class)
+public class Crop implements Predicate<IBlockState> {
 
-    public Crop(BlockStack initialBlock, BlockStack finalBlock) {
-        this.initialBlock = initialBlock;
-        this.finalBlock = finalBlock;
+    private final IBlockState mature;
+    private Block block;
+
+    public Crop(IBlockState mature) {
+        this.mature = mature;
     }
 
-    public Crop(Block initial, int maxAge) {
-        this(new BlockStack(initial, maxAge), new BlockStack(initial, 0));
+    public IBlockState getMature() {
+        return mature;
     }
 
-    public BlockStack getInitialBlock() {
-        return initialBlock;
+    public Block getBlock() {
+        return block == null ? block = mature.getBlock() : block;
     }
 
-    public BlockStack getFinalBlock() {
-        return finalBlock;
+    @Override
+    public boolean test(IBlockState state) {
+        return state == mature;
     }
 
     @Override
     public String toString() {
-        return "Crop{" +
-                "initialBlock=" + initialBlock +
-                ", finalBlock=" + finalBlock +
-                '}';
+        return "Crop{" + mature.toString() + "}";
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public static class Adapter implements JsonSerializer<Crop>, JsonDeserializer<Crop> {
+        @Override
+        public Crop deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject json = element.getAsJsonObject();
+            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(json.getAsJsonPrimitive("block").getAsString()));
+            IBlockState state = block.getDefaultState();
+            JsonObject stateObject = json.getAsJsonObject("states");
+            for (Map.Entry<String, JsonElement> e : stateObject.entrySet()) {
+                IProperty property = block.getStateContainer().getProperty(e.getKey());
+                if (property != null) {
+                    String valueString = e.getValue().getAsString();
+                    Comparable value = (Comparable) property.parseValue(valueString).get();
+                    state = state.with(property, value);
+                }
+            }
+            return new Crop(state);
+        }
 
-        Crop crop = (Crop) o;
+        @Override
+        public JsonElement serialize(Crop src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject object = new JsonObject();
+            object.addProperty("block", ForgeRegistries.BLOCKS.getKey(src.getBlock()).toString());
 
-        if (getInitialBlock() != null ? !getInitialBlock().equals(crop.getInitialBlock()) : crop.getInitialBlock() != null)
-            return false;
-        return getFinalBlock() != null ? getFinalBlock().equals(crop.getFinalBlock()) : crop.getFinalBlock() == null;
+            String stateString = src.mature.toString();
+            String[] properties = stateString.substring(stateString.indexOf("[") + 1, stateString.length() - 1).split(",");
 
-    }
+            JsonObject states = new JsonObject();
+            for (String property : properties) {
+                String[] split = property.split("=");
+                states.addProperty(split[0], split[1]);
+            }
+            object.add("states", states);
 
-    @Override
-    public int hashCode() {
-        int result = getInitialBlock() != null ? getInitialBlock().hashCode() : 0;
-        result = 31 * result + (getFinalBlock() != null ? getFinalBlock().hashCode() : 0);
-        return result;
+            return object;
+        }
     }
 }
+

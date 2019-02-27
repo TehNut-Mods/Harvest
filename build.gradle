@@ -1,20 +1,19 @@
 buildscript {
     repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        jcenter()
         mavenCentral()
-        maven { url = "http://files.minecraftforge.net/maven" }
-        maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
-
 plugins {
-    id "com.matthewprenger.cursegradle" version "1.1.2"
+    id "com.matthewprenger.cursegradle" version "1.2.0"
     id "maven-publish"
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'net.minecraftforge.gradle'
 
 def build_number = 'CUSTOM'
 
@@ -25,59 +24,67 @@ group = package_group
 archivesBaseName = mod_name
 version = "${mc_version}-${mod_version}-${build_number}"
 
+minecraft {
+    mappings channel: 'snapshot', version: "20190216-1.13.1" // FIXME - Use properties when Forge fixes lack of GString support
+
+    runs {
+        client = {
+            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
+            properties 'forge.logging.console.level': 'info'
+            properties 'username': 'Hwyla'
+            workingDirectory project.file('run').canonicalPath
+            source sourceSets.main
+        }
+        server = {
+            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
+            properties 'forge.logging.console.level': 'info'
+            workingDirectory project.file('run/server').canonicalPath
+            source sourceSets.main
+        }
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.toml'
+
+        expand 'version': project.version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.toml'
+    }
+}
+
 repositories {
 
 }
 
 dependencies {
-
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 }
 
-minecraft {
-    version = "${mc_version}-${forge_version}"
-    runDir = "run"
-
-    replaceIn "Harvest.java"
-    replace "@VERSION@", project.version
-
-    if (project.hasProperty('mappings_version'))
-        mappings = project.mappings_version
-}
-
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    from(sourceSets.main.resources.srcDirs) {
-        include '**/*.info'
-        include '**/*.properties'
-
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
-    from(sourceSets.main.resources.srcDirs) {
-        exclude '**/*.info'
-        exclude '**/*.properties'
-    }
-}
-
+// Combine main and API source sets
 jar {
-    classifier = ''
-    manifest.mainAttributes(
-            "Built-By": System.getProperty('user.name'),
-            "Created-By": "${System.getProperty('java.vm.version')} + (${System.getProperty('java.vm.vendor')})",
-            "Implementation-Title": project.name,
-            "Implementation-Version": project.version,
-            "Built-on": "${mc_version}-${forge_version}"
-    )
+    from sourceSets.main.output
+    manifest {
+        attributes(["Specification-Title": mod_name,
+                    "Specification-Vendor": "TehNut",
+                    "Specification-Version": "1", // We are version 1 of ourselves
+                    "Implementation-Title": mod_name,
+                    "Implementation-Version": "${version}",
+                    "Implementation-Vendor" :"TehNut",
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
+    }
 }
 
-// add a javadoc jar
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
-    classifier = 'javadoc'
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
 }
 
-tasks.build.dependsOn sourceJar, javadocJar
+tasks.build.dependsOn sourcesJar
 
 tasks.withType(JavaCompile) { task ->
     task.options.encoding = 'UTF-8'
@@ -88,8 +95,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifact jar
-            artifact sourceJar
-            artifact javadocJar
+            artifact sourcesJar
         }
     }
     repositories {
@@ -101,15 +107,40 @@ publishing {
     }
 }
 
+String getChangelogText() {
+    def changelogFile = new File('changelog.txt')
+    String str = ''
+    String separator = '---'
+    int lineCount = 0
+    boolean done = false
+    changelogFile.eachLine {
+        if (done || it == null) {
+            return
+        }
+        if (lineCount < 3) {
+            lineCount++
+            if (it.startsWith(separator)) {
+                return
+            }
+        }
+        if (!it.startsWith(separator)) {
+            str += "$it" + (lineCount < 3 ? ':\n\n' : '\n')
+            return
+        }
+        done = true // once we go past the first version block, parse no more
+    }
+    return str
+}
+
 curseforge {
-    if (project.hasProperty('curse_key'))
-        apiKey = project.curse_key
+    if (project.hasProperty('curse_key_TehNut'))
+        apiKey = project.curse_key_TehNut
 
     project {
         id = "${curse_id}"
+        changelog = getChangelogText()
         releaseType = 'release'
 
-        addArtifact sourceJar
-        addArtifact javadocJar
+        addArtifact sourcesJar
     }
 }

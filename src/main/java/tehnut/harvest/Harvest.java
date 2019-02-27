@@ -1,63 +1,91 @@
 package tehnut.harvest;
 
+import com.google.common.base.Joiner;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockCrops;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.Item;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.lang.reflect.Method;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod(modid = Harvest.MODID, name = Harvest.NAME, version = Harvest.VERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.11,1.13)")
+@Mod(Harvest.MODID)
 public class Harvest {
 
     public static final String MODID = "harvest";
-    public static final String NAME = "Harvest";
-    public static final String VERSION = "@VERSION@";
-    public static final Logger LOGGER = LogManager.getLogger(NAME);
+    public static final Logger LOGGER = LogManager.getLogger(MODID);
+    public static final Tag<Item> SEED_TAG = new ItemTags.Wrapper(new ResourceLocation("harvest", "seeds"));
     public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = new HashMap<Block, IReplantHandler>();
-    public static final Method _GET_SEED;
 
     public static HarvestConfig config;
 
-    static {
-        _GET_SEED = ReflectionHelper.findMethod(BlockCrops.class, "getSeed", "func_149866_i");
+    public Harvest() {
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, EventHandler::onInteract);
     }
 
-    @Mod.EventHandler
-    public void init(FMLPostInitializationEvent event) {
-        JsonConfigHandler.init(Loader.instance().getConfigDir());
+    @SubscribeEvent
+    public void setup(FMLCommonSetupEvent event) {
+        File configFile = new File(FMLPaths.CONFIGDIR.get().toFile(), "harvest.json");
+        try (FileReader reader = new FileReader(configFile)) {
+            config = new Gson().fromJson(reader, HarvestConfig.class);
+            debug("Successfully loaded config");
+            debug("Currently enabled crops: {}", Joiner.on(" | ").join(config.getCrops()));
+        } catch (IOException e) {
+            config = new HarvestConfig();
+            debug("Config not found, generating a new one.");
+            try (FileWriter writer = new FileWriter(configFile)) {
+                writer.write(new GsonBuilder().setPrettyPrinting().create().toJson(config));
+            } catch (IOException e2) {
+                debug("Failed to generate new config", e2);
+            }
+        }
     }
 
-    @Mod.EventBusSubscriber
     public static class EventHandler {
-        @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onInteract(PlayerInteractEvent.RightClickBlock event) {
+            if (!(event.getWorld() instanceof WorldServer))
+                return;
+
             if (event.getHand() != EnumHand.MAIN_HAND)
                 return;
 
-            BlockStack worldBlock = BlockStack.getStackFromPos(event.getWorld(), event.getPos());
-            if (config.getCropMap().containsKey(worldBlock)) {
-                if (CUSTOM_HANDLERS.containsKey(worldBlock.getBlock()))
-                    CUSTOM_HANDLERS.get(worldBlock.getBlock()).handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
-                else
-                    ReplantHandlers.CONFIG.handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
-
-                event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
-                event.setUseItem(Event.Result.DENY);
+            IBlockState state = event.getWorld().getBlockState(event.getPos());
+            IReplantHandler handler = CUSTOM_HANDLERS.getOrDefault(state.getBlock(), ReplantHandlers.CONFIG);
+            EnumActionResult result = handler.handlePlant(event.getWorld(), event.getPos(), state, event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
+            if (result == EnumActionResult.SUCCESS) {
+                event.getEntityPlayer().swingArm(event.getHand());
                 event.getEntityPlayer().addExhaustion(config.getExhaustionPerHarvest());
             }
+            debug("Attempted crop harvest with result {} has completed", result);
+            event.setUseItem(result == EnumActionResult.SUCCESS ? Event.Result.DENY : Event.Result.ALLOW);
         }
+    }
+
+    static void debug(String message, Object... args) {
+        if (config.additionalLogging())
+            LOGGER.info("[DEBUG] " + message, args);
     }
 }
