@@ -44,7 +44,7 @@ public class Crop implements Predicate<BlockState> {
         @Override
         public Crop deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject json = element.getAsJsonObject();
-            Block block = Registry.BLOCKS.get(new Identifier(json.getAsJsonPrimitive("block").getAsString()));
+            Block block = Registry.BLOCK.get(new Identifier(json.getAsJsonPrimitive("block").getAsString()));
             BlockState state = block.getDefaultState();
             JsonObject stateObject = json.getAsJsonObject("states");
             for (Map.Entry<String, JsonElement> e : stateObject.entrySet()) {
@@ -61,7 +61,7 @@ public class Crop implements Predicate<BlockState> {
         @Override
         public JsonElement serialize(Crop src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject object = new JsonObject();
-            object.addProperty("block", Registry.BLOCKS.getId(src.getBlock()).toString());
+            object.addProperty("block", Registry.BLOCK.getId(src.getBlock()).toString());
 
             String stateString = src.mature.toString();
             String[] properties = stateString.substring(stateString.indexOf("[") + 1, stateString.length() - 1).split(",");

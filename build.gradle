@@ -1,21 +1,21 @@
 plugins {
-	id 'fabric-loom' version '0.1.0-SNAPSHOT'
+	id 'fabric-loom' version '0.2.0-SNAPSHOT'
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 archivesBaseName = "Harvest"
-version = "1.14-fabric-1.0.3"
+version = "1.14-fabric-1.0.4"
 
 minecraft {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:18w49a"
-	mappings "net.fabricmc:yarn:18w49a.6"
-	modCompile "net.fabricmc:fabric-loader:0.2.0.62"
+    minecraft "com.mojang:minecraft:19w08b"
+    mappings "net.fabricmc:yarn:19w08b.9"
+    modCompile "net.fabricmc:fabric-loader:0.3.7.109"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modCompile "net.fabricmc:fabric:0.1.0.38"
+    //Fabric api
+    modCompile "net.fabricmc:fabric:0.2.3.107"
 }

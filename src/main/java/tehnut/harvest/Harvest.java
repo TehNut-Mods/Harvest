@@ -4,9 +4,9 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.events.PlayerInteractionEvent;
-import net.fabricmc.fabric.tags.TagRegistry;
-import net.fabricmc.loader.FabricLoader;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.tag.TagRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
@@ -17,6 +17,7 @@ import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +34,7 @@ public class Harvest implements ModInitializer {
 
     public static final Tag<Item> SEED_TAG = TagRegistry.item(new Identifier("harvest", "seeds"));
     public static final Logger LOGGER = LogManager.getLogger("Harvest");
-    public static final IReplantHandler DEFAULT_HANDLER = (world, pos, state, player, tileEntity) -> {
+    public static final IReplantHandler DEFAULT_HANDLER = (world, hit, state, player, tileEntity) -> {
         Crop crop = config.getCrops().stream().filter(c -> c.test(state)).findFirst().orElse(null);
         if (crop == null) {
             debug("No crop found for state {}", state);
@@ -41,6 +42,7 @@ public class Harvest implements ModInitializer {
             return ActionResult.PASS;
         }
 
+        BlockPos pos = hit.getBlockPos();
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, tileEntity, player, player.getStackInHand(Hand.MAIN));
         boolean foundSeed = false;
         for (ItemStack drop : drops) {
@@ -58,12 +60,12 @@ public class Harvest implements ModInitializer {
         }
 
         debug("Failed to find a seed for {}", state);
-        return ActionResult.FAILURE;
+        return ActionResult.FAIL;
     };
 
     @Override
     public void onInitialize() {
-        File configFile = new File(FabricLoader.INSTANCE.getConfigDirectory(), "harvest.json");
+        File configFile = new File(FabricLoader.getInstance().getConfigDirectory(), "harvest.json");
         try (FileReader reader = new FileReader(configFile)) {
             config = new Gson().fromJson(reader, HarvestConfig.class);
             debug("Successfully loaded config");
@@ -78,16 +80,16 @@ public class Harvest implements ModInitializer {
             }
         }
 
-        PlayerInteractionEvent.INTERACT_BLOCK.register((player, world, hand, pos, facing, hitX, hitY, hitZ) -> {
+        UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
             if (!(world instanceof ServerWorld))
                 return ActionResult.PASS;
 
             if (hand != Hand.MAIN)
                 return ActionResult.PASS;
 
-            BlockState state = world.getBlockState(pos);
+            BlockState state = world.getBlockState(hit.getBlockPos());
             IReplantHandler handler = DEFAULT_HANDLER; // TODO - Allow configuration
-            ActionResult result = handler.handlePlant((ServerWorld) world, pos, state, player, world.getBlockEntity(pos));
+            ActionResult result = handler.handlePlant((ServerWorld) world, hit, state, player, world.getBlockEntity(hit.getBlockPos()));
             if (result == ActionResult.SUCCESS) {
                 player.swingHand(hand);
                 player.addExhaustion(config.getExhaustionPerHarvest());

@@ -1,6 +1,6 @@
 {
   "id": "harvest",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "name": "Harvest",
   "description": "Configurable right click crop harvesting ",
   "links": {
@@ -19,5 +19,7 @@
   },
   "license": "MIT",
   "side": "universal",
-  "initializer": "tehnut.harvest.Harvest"
+  "initializers": [
+    "tehnut.harvest.Harvest"
+  ]
 }
