@@ -80,7 +80,7 @@ public class Harvest {
                 event.getEntityPlayer().addExhaustion(config.getExhaustionPerHarvest());
             }
             debug("Attempted crop harvest with result {} has completed", result);
-            event.setUseItem(result == EnumActionResult.SUCCESS ? Event.Result.DENY : Event.Result.ALLOW);
+            event.setUseItem(result == EnumActionResult.SUCCESS ? Event.Result.DENY : event.getUseItem());
         }
     }
 
