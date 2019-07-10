@@ -16,9 +16,8 @@ public class ReplantHandlers {
         BlockStack newBlock = Harvest.config.getCropMap().get(worldBlock).getFinalBlock();
         NonNullList<ItemStack> drops = NonNullList.create();
         worldBlock.getBlock().getDrops(drops, world, pos, state, 0);
-        ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1.0F, false, player);
-        boolean foundSeed = false;
 
+        boolean foundSeed = false;
         for (ItemStack stack : drops) {
             if (stack.isEmpty())
                 continue;
@@ -40,18 +39,20 @@ public class ReplantHandlers {
             }
         }
 
-        if (seedNotNull && foundSeed) {
-            if (!world.isRemote) {
-                world.setBlockState(pos, newBlock.getState());
-                for (ItemStack stack : drops) {
-                    EntityItem entityItem = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
-                    entityItem.setPickupDelay(10);
-                    world.spawnEntity(entityItem);
-                }
-            }
-        } else {
+        if (!seedNotNull || !foundSeed) {
             if (Harvest.config.shouldLog())
                 Harvest.LOGGER.info("Did not harvest. seedNotNull - {}, foundSeed - {}", seedNotNull, foundSeed);
+            return;
+        }
+
+        if (!world.isRemote) {
+            ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1.0F, false, player);
+            world.setBlockState(pos, newBlock.getState());
+            for (ItemStack stack : drops) {
+                EntityItem entityItem = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+                entityItem.setPickupDelay(10);
+                world.spawnEntity(entityItem);
+            }
         }
     };
 }
