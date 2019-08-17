@@ -1,13 +1,13 @@
 package tehnut.harvest;
 
 import com.google.common.base.Joiner;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Enchantments;
+import net.minecraft.block.Block;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
+
+import java.util.List;
 
 public class ReplantHandlers {
 
@@ -16,11 +16,10 @@ public class ReplantHandlers {
         if (crop == null) {
             Harvest.debug("No crop found for state {}", state);
             Harvest.debug("Valid crops {}", Joiner.on(" | ").join(Harvest.config.getCrops()));
-            return EnumActionResult.PASS;
+            return ActionResultType.PASS;
         }
 
-        NonNullList<ItemStack> drops = NonNullList.create();
-        state.getDrops(drops, world, pos, EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, player.getHeldItem(EnumHand.MAIN_HAND)));
+        List<ItemStack> drops = Block.getDrops(state, world, pos, tileEntity, player, player.getHeldItem(Hand.MAIN_HAND));
         boolean foundSeed = false;
         for (ItemStack drop : drops) {
             if (drop.getItem().isIn(Harvest.SEED_TAG)) {
@@ -33,10 +32,10 @@ public class ReplantHandlers {
         if (foundSeed) {
             drops.forEach(stack -> InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), stack));
             world.setBlockState(pos, state.getBlock().getDefaultState());
-            return EnumActionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
 
         Harvest.debug("Failed to find a seed for {}", state);
-        return EnumActionResult.FAIL;
+        return ActionResultType.FAIL;
     };
 }

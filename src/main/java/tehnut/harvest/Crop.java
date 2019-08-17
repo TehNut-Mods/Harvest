@@ -3,7 +3,7 @@ package tehnut.harvest;
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.state.IProperty;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -13,16 +13,16 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 @JsonAdapter(Crop.Adapter.class)
-public class Crop implements Predicate<IBlockState> {
+public class Crop implements Predicate<BlockState> {
 
-    private final IBlockState mature;
+    private final BlockState mature;
     private Block block;
 
-    public Crop(IBlockState mature) {
+    public Crop(BlockState mature) {
         this.mature = mature;
     }
 
-    public IBlockState getMature() {
+    public BlockState getMature() {
         return mature;
     }
 
@@ -31,7 +31,7 @@ public class Crop implements Predicate<IBlockState> {
     }
 
     @Override
-    public boolean test(IBlockState state) {
+    public boolean test(BlockState state) {
         return state == mature;
     }
 
@@ -45,7 +45,7 @@ public class Crop implements Predicate<IBlockState> {
         public Crop deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject json = element.getAsJsonObject();
             Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(json.getAsJsonPrimitive("block").getAsString()));
-            IBlockState state = block.getDefaultState();
+            BlockState state = block.getDefaultState();
             JsonObject stateObject = json.getAsJsonObject("states");
             for (Map.Entry<String, JsonElement> e : stateObject.entrySet()) {
                 IProperty property = block.getStateContainer().getProperty(e.getKey());

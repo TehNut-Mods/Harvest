@@ -1,17 +1,18 @@
 package tehnut.harvest;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -28,7 +29,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 @Mod(Harvest.MODID)
@@ -37,7 +37,7 @@ public class Harvest {
     public static final String MODID = "harvest";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
     public static final Tag<Item> SEED_TAG = new ItemTags.Wrapper(new ResourceLocation("harvest", "seeds"));
-    public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = new HashMap<Block, IReplantHandler>();
+    public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = Maps.newHashMap();
 
     public static HarvestConfig config;
 
@@ -66,21 +66,21 @@ public class Harvest {
 
     public static class EventHandler {
         public static void onInteract(PlayerInteractEvent.RightClickBlock event) {
-            if (!(event.getWorld() instanceof WorldServer))
+            if (!(event.getWorld() instanceof ServerWorld))
                 return;
 
-            if (event.getHand() != EnumHand.MAIN_HAND)
+            if (event.getHand() != Hand.MAIN_HAND)
                 return;
 
-            IBlockState state = event.getWorld().getBlockState(event.getPos());
+            BlockState state = event.getWorld().getBlockState(event.getPos());
             IReplantHandler handler = CUSTOM_HANDLERS.getOrDefault(state.getBlock(), ReplantHandlers.CONFIG);
-            EnumActionResult result = handler.handlePlant(event.getWorld(), event.getPos(), state, event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
-            if (result == EnumActionResult.SUCCESS) {
-                event.getEntityPlayer().swingArm(event.getHand());
-                event.getEntityPlayer().addExhaustion(config.getExhaustionPerHarvest());
+            ActionResultType result = handler.handlePlant((ServerWorld) event.getWorld(), event.getPos(), state, event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
+            if (result == ActionResultType.SUCCESS) {
+                event.getPlayer().swingArm(event.getHand());
+                event.getPlayer().addExhaustion(config.getExhaustionPerHarvest());
             }
             debug("Attempted crop harvest with result {} has completed", result);
-            event.setUseItem(result == EnumActionResult.SUCCESS ? Event.Result.DENY : event.getUseItem());
+            event.setUseItem(result == ActionResultType.SUCCESS ? Event.Result.DENY : event.getUseItem());
         }
     }
 

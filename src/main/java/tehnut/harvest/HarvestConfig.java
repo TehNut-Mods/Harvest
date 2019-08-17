@@ -1,12 +1,10 @@
 package tehnut.harvest;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.Blocks;
 import net.minecraft.state.properties.BlockStateProperties;
 
 import java.util.List;
-import java.util.Map;
 
 public class HarvestConfig {
 

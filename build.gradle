@@ -9,7 +9,7 @@ buildscript {
     }
 }
 plugins {
-    id "com.matthewprenger.cursegradle" version "1.2.0"
+    id "com.matthewprenger.cursegradle" version "1.4.0"
     id "maven-publish"
 }
 
@@ -21,25 +21,36 @@ if (System.getenv('BUILD_NUMBER') != null)
     build_number = System.getenv('BUILD_NUMBER')
 
 group = package_group
-archivesBaseName = mod_name
 version = "${mc_version}-${mod_version}-${build_number}"
+archivesBaseName = "${mod_name}-forge"
 
 minecraft {
-    mappings channel: 'snapshot', version: "20190216-1.13.1" // FIXME - Use properties when Forge fixes lack of GString support
+    mappings channel: "${mapping_channel}", version: "${mapping_version}"
 
     runs {
-        client = {
-            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
-            properties 'forge.logging.console.level': 'info'
-            properties 'username': 'Hwyla'
-            workingDirectory project.file('run').canonicalPath
-            source sourceSets.main
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'info'
+            property 'username', 'Harvest'
+
+            mods {
+                harvest {
+                    source sourceSets.main
+                }
+            }
         }
-        server = {
-            properties 'forge.logging.markers': 'REGISTRIES,REGISTRYDUMP'
-            properties 'forge.logging.console.level': 'info'
-            workingDirectory project.file('run/server').canonicalPath
-            source sourceSets.main
+
+        server {
+            workingDirectory project.file('run/server')
+            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'info'
+
+            mods {
+                harvest {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
@@ -65,14 +76,16 @@ dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
 }
 
+apply from: "gradle/process_mod_info.gradle"
+
 // Combine main and API source sets
 jar {
     from sourceSets.main.output
     manifest {
-        attributes(["Specification-Title": mod_name,
+        attributes(["Specification-Title": project.name,
                     "Specification-Vendor": "TehNut",
                     "Specification-Version": "1", // We are version 1 of ourselves
-                    "Implementation-Title": mod_name,
+                    "Implementation-Title": project.name,
                     "Implementation-Version": "${version}",
                     "Implementation-Vendor" :"TehNut",
                     "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
@@ -140,6 +153,10 @@ curseforge {
         id = "${curse_id}"
         changelog = getChangelogText()
         releaseType = 'release'
+
+        addGameVersion "1.14.2"
+        addGameVersion "1.14.3"
+        addGameVersion "1.14.4"
 
         addArtifact sourcesJar
     }

@@ -1,15 +1,15 @@
 package tehnut.harvest;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 import javax.annotation.Nullable;
 
 public interface IReplantHandler {
 
-    EnumActionResult handlePlant(World world, BlockPos pos, IBlockState state, EntityPlayer player, @Nullable TileEntity tileEntity);
+    ActionResultType handlePlant(ServerWorld world, BlockPos pos, BlockState state, PlayerEntity player, @Nullable TileEntity tileEntity);
 }
