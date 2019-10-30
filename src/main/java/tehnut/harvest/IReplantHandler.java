@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
 
 public interface IReplantHandler {
     ActionResult handlePlant(ServerWorld world, BlockHitResult hit, BlockState state, PlayerEntity player, BlockEntity tileEntity);
