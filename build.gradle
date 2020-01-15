@@ -25,7 +25,7 @@ version = "${mc_version}-${mod_version}-${build_number}"
 archivesBaseName = "${mod_name}-forge"
 
 minecraft {
-    mappings channel: "${mapping_channel}", version: "${mapping_version}"
+    mappings channel: "snapshot", version: "20190816-1.14.3"
 
     runs {
         client {

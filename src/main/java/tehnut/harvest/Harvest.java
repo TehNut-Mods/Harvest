@@ -74,7 +74,7 @@ public class Harvest {
 
             BlockState state = event.getWorld().getBlockState(event.getPos());
             IReplantHandler handler = CUSTOM_HANDLERS.getOrDefault(state.getBlock(), ReplantHandlers.CONFIG);
-            ActionResultType result = handler.handlePlant((ServerWorld) event.getWorld(), event.getPos(), state, event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
+            ActionResultType result = handler.handlePlant((ServerWorld) event.getWorld(), event.getPos(), state, event.getPlayer(), event.getWorld().getTileEntity(event.getPos()));
             if (result == ActionResultType.SUCCESS) {
                 event.getPlayer().swingArm(event.getHand());
                 event.getPlayer().addExhaustion(config.getExhaustionPerHarvest());
