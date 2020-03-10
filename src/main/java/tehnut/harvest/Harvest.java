@@ -2,7 +2,18 @@ package tehnut.harvest;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCrops;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -14,7 +25,6 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +36,7 @@ public class Harvest {
     public static final String NAME = "Harvest";
     public static final String VERSION = "@VERSION@";
     public static final Logger LOGGER = LogManager.getLogger(NAME);
-    public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = new HashMap<Block, IReplantHandler>();
+    public static final Map<Block, IReplantHandler> CUSTOM_HANDLERS = new HashMap<>();
     public static final Method _GET_SEED;
 
     public static HarvestConfig config;
@@ -52,11 +62,54 @@ public class Harvest {
                 if (CUSTOM_HANDLERS.containsKey(worldBlock.getBlock()))
                     CUSTOM_HANDLERS.get(worldBlock.getBlock()).handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
                 else
-                    ReplantHandlers.CONFIG.handlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), event.getWorld().getTileEntity(event.getPos()));
+                    defaultHandlePlant(event.getWorld(), event.getPos(), worldBlock.getState(), event.getEntityPlayer(), worldBlock);
 
                 event.getEntityPlayer().swingArm(EnumHand.MAIN_HAND);
                 event.setUseItem(Event.Result.DENY);
                 event.getEntityPlayer().addExhaustion(config.getExhaustionPerHarvest());
+            }
+        }
+
+        private static void defaultHandlePlant(World world, BlockPos pos, IBlockState state, EntityPlayer player, BlockStack worldBlock) {
+            BlockStack newBlock = Harvest.config.getCropMap().get(worldBlock).getFinalBlock();
+            NonNullList<ItemStack> drops = NonNullList.create();
+            worldBlock.getBlock().getDrops(drops, world, pos, state, 0);
+            ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, 0, 1.0F, false, player);
+            boolean foundSeed = false;
+
+            for (ItemStack stack : drops) {
+                if (stack.isEmpty())
+                    continue;
+
+                if (stack.getItem() instanceof IPlantable) {
+                    stack.shrink(1);
+                    foundSeed = true;
+                    break;
+                }
+            }
+
+            boolean seedNotNull = true;
+            if (worldBlock.getBlock() instanceof BlockCrops) {
+                try {
+                    Item seed = (Item) Harvest._GET_SEED.invoke(worldBlock.getBlock());
+                    seedNotNull = seed != null && seed != Items.AIR;
+                } catch (Exception e) {
+                    Harvest.LOGGER.error("Failed to reflect BlockCrops: {}", e.getLocalizedMessage());
+                }
+            }
+
+            if (seedNotNull && foundSeed) {
+                if (!world.isRemote) {
+                    world.setBlockState(pos, newBlock.getState());
+                    for (ItemStack stack : drops) {
+                        EntityItem entityItem = new EntityItem(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+                        entityItem.setPickupDelay(10);
+                        world.spawnEntity(entityItem);
+                    }
+                }
+            } else {
+                if (Harvest.config.shouldLog())
+                    Harvest.LOGGER.info("Did not harvest. seedNotNull - {}, foundSeed - {}", seedNotNull, foundSeed);
             }
         }
     }

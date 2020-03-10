@@ -7,11 +7,11 @@ import java.util.Map;
 
 public class HarvestConfig {
 
+    private final transient Map<BlockStack, Crop> cropMap;
     private List<Crop> crops;
     private float exhaustionPerHarvest;
     private boolean additionalLogging;
     private boolean checkForCrops;
-    private final transient Map<BlockStack, Crop> cropMap;
 
     public HarvestConfig(List<Crop> crops, float exhaustionPerHarvest, boolean additionalLogging, boolean checkForCrops) {
         this.crops = crops;

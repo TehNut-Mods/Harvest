@@ -21,11 +21,6 @@ public class BlockStack {
         this(block, 0);
     }
 
-    public static BlockStack getStackFromPos(World world, BlockPos pos) {
-        IBlockState state = world.getBlockState(pos);
-        return new BlockStack(state.getBlock(), state.getBlock().getMetaFromState(state));
-    }
-
     public Block getBlock() {
         return block;
     }
@@ -62,5 +57,10 @@ public class BlockStack {
         result = 31 * result + getMeta();
         result = 31 * result + (getState() != null ? getState().hashCode() : 0);
         return result;
+    }
+
+    public static BlockStack getStackFromPos(World world, BlockPos pos) {
+        IBlockState state = world.getBlockState(pos);
+        return new BlockStack(state.getBlock(), state.getBlock().getMetaFromState(state));
     }
 }
