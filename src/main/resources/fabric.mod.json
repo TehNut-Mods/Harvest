@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "harvest",
-  "version": "1.0.4",
+  "version": "1.2.12",
   "name": "Harvest",
   "description": "Configurable right click crop harvesting ",
   "links": {
