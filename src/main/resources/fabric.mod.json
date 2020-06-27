@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 1,
   "id": "harvest",
   "version": "1.0.4",
   "name": "Harvest",
@@ -7,6 +8,11 @@
     "homepage": "https://minecraft.curseforge.com/projects/simpleharvest",
     "issues": "https://github.com/TehNut/Harvest/issues",
     "sources": "https://github.com/TehNut/Harvest"
+  },
+  "entrypoints": {
+    "main": [
+      "info.tehnut.harvest.Harvest"
+    ]
   },
   "authors": [
     "TehNut"
@@ -17,9 +23,5 @@
   "requires": {
     "fabric": "*"
   },
-  "license": "MIT",
-  "side": "universal",
-  "initializers": [
-    "tehnut.harvest.Harvest"
-  ]
+  "license": "MIT"
 }

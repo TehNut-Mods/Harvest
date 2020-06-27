@@ -1,4 +1,4 @@
-package tehnut.harvest;
+package info.tehnut.harvest;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.Blocks;

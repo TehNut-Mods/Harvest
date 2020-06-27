@@ -1,21 +1,74 @@
 plugins {
-	id 'fabric-loom' version '0.2.0-SNAPSHOT'
+    id "com.matthewprenger.cursegradle" version "1.4.0"
+    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id "maven-publish"
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
-archivesBaseName = "Harvest"
-version = "1.14-fabric-1.0.4"
+def build_number = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : 'CUSTOM'
+
+group = package_group
+archivesBaseName = "${mod_name}-fabric"
+version = "${mc_version}-${mod_version}-${build_number}"
 
 minecraft {
+    refmapName = mod_name.toLowerCase() + '-refmap.json'
+}
+
+repositories {
+
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:19w08b"
-    mappings "net.fabricmc:yarn:19w08b.9"
-    modCompile "net.fabricmc:fabric-loader:0.3.7.109"
+    minecraft "com.mojang:minecraft:${mc_version}"
+    mappings "net.fabricmc:yarn:${mc_version}+build.${mappings_version}:v2"
+    modCompile "net.fabricmc:fabric-loader:${loader_version}"
+    modCompile "net.fabricmc.fabric-api:fabric-api:${api_version}"
+}
 
-    //Fabric api
-    modCompile "net.fabricmc:fabric:0.2.3.107"
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+publishing {
+    tasks.publish.dependsOn 'build'
+    publications {
+        mavenJava(MavenPublication) {
+            artifact remapJar
+            artifact sourcesJar
+        }
+    }
+    repositories {
+        if (project.hasProperty('maven_repo')) {
+            maven { url maven_repo }
+        } else {
+            mavenLocal()
+        }
+    }
+}
+
+curseforge {
+    if (project.hasProperty('curse_key_TehNut'))
+        apiKey = project.curse_key_TehNut
+
+    project {
+        id = "${curse_id}"
+        releaseType = 'release'
+
+        addGameVersion "1.16.1"
+        addGameVersion "Java 8"
+        addArtifact sourcesJar
+        mainArtifact(file("${project.buildDir}/libs/${archivesBaseName}-${version}.jar"))
+
+        afterEvaluate {
+            uploadTask.dependsOn(remapJar)
+        }
+    }
+
+    options {
+        forgeGradleIntegration = false
+    }
 }

@@ -1,4 +1,4 @@
-package tehnut.harvest;
+package info.tehnut.harvest;
 
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
@@ -48,10 +48,10 @@ public class Crop implements Predicate<BlockState> {
             BlockState state = block.getDefaultState();
             JsonObject stateObject = json.getAsJsonObject("states");
             for (Map.Entry<String, JsonElement> e : stateObject.entrySet()) {
-                Property property = block.getStateFactory().getProperty(e.getKey());
+                Property property = block.getStateManager().getProperty(e.getKey());
                 if (property != null) {
                     String valueString = e.getValue().getAsString();
-                    Comparable value = (Comparable) property.getValue(valueString).get();
+                    Comparable value = (Comparable) property.parse(valueString).get();
                     state = state.with(property, value);
                 }
             }
