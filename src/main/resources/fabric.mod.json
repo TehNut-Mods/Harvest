@@ -20,7 +20,7 @@
   "contributors": [
     "InsomniaKitten"
   ],
-  "requires": {
+  "depends": {
     "fabric": "*"
   },
   "license": "MIT"
