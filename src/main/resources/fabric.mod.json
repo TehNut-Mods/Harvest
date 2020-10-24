@@ -4,7 +4,7 @@
   "version": "1.2.12",
   "name": "Harvest",
   "description": "Configurable right click crop harvesting ",
-  "links": {
+  "contact": {
     "homepage": "https://minecraft.curseforge.com/projects/simpleharvest",
     "issues": "https://github.com/TehNut/Harvest/issues",
     "sources": "https://github.com/TehNut/Harvest"
