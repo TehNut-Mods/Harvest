@@ -43,8 +43,3 @@ This branch depends on [Fabric-Loader](https://fabricmc.net/) and [Fabric](https
   ]
 }
 ```
-
-## Compatibility
-
-If your mod adds basic crops, please consider shipping a `harvest:seeds` tag defining your seed items. This will
-allow users to define your crops in the config of this mod and have them function properly. 
