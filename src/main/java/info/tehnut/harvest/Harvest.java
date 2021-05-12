@@ -9,6 +9,8 @@ import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.CropBlock;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -32,7 +34,6 @@ public class Harvest implements ModInitializer {
     // Up top against convention so DEFAULT_HANDLER can access it
     public static HarvestConfig config;
 
-    public static final Tag<Item> SEED_TAG = TagRegistry.item(new Identifier("harvest", "seeds"));
     public static final Logger LOGGER = LogManager.getLogger("Harvest");
     public static final IReplantHandler DEFAULT_HANDLER = (world, hit, state, player, tileEntity) -> {
         Crop crop = config.getCrops().stream().filter(c -> c.test(state)).findFirst().orElse(null);
@@ -46,7 +47,8 @@ public class Harvest implements ModInitializer {
         List<ItemStack> drops = Block.getDroppedStacks(state, world, pos, tileEntity, player, player.getStackInHand(Hand.MAIN_HAND));
         boolean foundSeed = false;
         for (ItemStack drop : drops) {
-            if (SEED_TAG.contains(drop.getItem())) {
+            Item dropItem = drop.getItem();
+            if (dropItem instanceof BlockItem && ((BlockItem)dropItem).getBlock() == state.getBlock()) {
                 foundSeed = true;
                 drop.decrement(1);
                 break;
